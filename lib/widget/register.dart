@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -6,7 +10,8 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  // Field
+  // Field  ใช้ในการประกาศตัวแปล
+  File file;
 
   // Method
 
@@ -16,7 +21,8 @@ class _RegisterState extends State<Register> {
     String help = 'Type Your Name in Blank';
     return TextField(
       decoration: InputDecoration(
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: color)),
+        enabledBorder:
+            UnderlineInputBorder(borderSide: BorderSide(color: color)),
         helperStyle: TextStyle(color: color),
         helperText: help,
         labelStyle: TextStyle(color: color),
@@ -36,7 +42,8 @@ class _RegisterState extends State<Register> {
     String help = 'Type Your userName in Blank';
     return TextField(
       decoration: InputDecoration(
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: color)),
+        enabledBorder:
+            UnderlineInputBorder(borderSide: BorderSide(color: color)),
         helperStyle: TextStyle(color: color),
         helperText: help,
         labelStyle: TextStyle(color: color),
@@ -56,7 +63,8 @@ class _RegisterState extends State<Register> {
     String help = 'Type Your password in Blank';
     return TextField(
       decoration: InputDecoration(
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: color)),
+        enabledBorder:
+            UnderlineInputBorder(borderSide: BorderSide(color: color)),
         helperStyle: TextStyle(color: color),
         helperText: help,
         labelStyle: TextStyle(color: color),
@@ -71,11 +79,32 @@ class _RegisterState extends State<Register> {
   }
 
   Widget showAvartar() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.3,
-      width: MediaQuery.of(context).size.width,
-      child: Image.asset('images/logo2.png'),
+    return GestureDetector(
+      onTap: () {
+        print('You Click Image');
+        cameraThread();
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.3,
+        width: MediaQuery.of(context).size.width,
+        child:
+            file == null ? Image.asset('images/logo2.png') : Image.file(file),
+      ),
     );
+  }
+
+  Future<void> cameraThread() async {
+    try {
+      var object = await ImagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 800.0,
+        maxHeight: 800.0,
+      );
+
+      setState(() {
+        file = object;
+      });
+    } catch (e) {}
   }
 
   Widget registerButton() {
