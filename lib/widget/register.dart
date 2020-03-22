@@ -1,6 +1,10 @@
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:aporice/utility/normal_dialog.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -12,6 +16,7 @@ class Register extends StatefulWidget {
 class _RegisterState extends State<Register> {
   // Field  ใช้ในการประกาศตัวแปล
   File file;
+  String name, user, password, urlPath;
 
   // Method
 
@@ -20,6 +25,7 @@ class _RegisterState extends State<Register> {
     String title = 'name :';
     String help = 'Type Your Name in Blank';
     return TextField(
+      onChanged: (value) => name = value.trim(),
       decoration: InputDecoration(
         enabledBorder:
             UnderlineInputBorder(borderSide: BorderSide(color: color)),
@@ -41,6 +47,7 @@ class _RegisterState extends State<Register> {
     String title = 'username :';
     String help = 'Type Your userName in Blank';
     return TextField(
+      onChanged: (value) => user = value.trim(),
       decoration: InputDecoration(
         enabledBorder:
             UnderlineInputBorder(borderSide: BorderSide(color: color)),
@@ -62,6 +69,7 @@ class _RegisterState extends State<Register> {
     String title = 'password :';
     String help = 'Type Your password in Blank';
     return TextField(
+      onChanged: (value) => password = value.trim(),
       decoration: InputDecoration(
         enabledBorder:
             UnderlineInputBorder(borderSide: BorderSide(color: color)),
@@ -119,8 +127,67 @@ class _RegisterState extends State<Register> {
     // สร้างก้อนเมฆ
     return IconButton(
       icon: Icon(Icons.cloud_upload),
-      onPressed: () {},
+      onPressed: () {
+        if (file == null) {
+          normalDialog(
+              context, 'Non choose Avatar ไม่มีรูปภาพ', 'กรุณาเปิดกล้อง');
+        } else if (name == null ||
+            name.isEmpty ||
+            user == null ||
+            user.isEmpty ||
+            password == null ||
+            password.isEmpty) {
+          normalDialog(context, 'มีช่องว่าง', 'กรุณาใส่ข้อความ');
+        } else {
+          uplodeImageToServer();
+        }
+      },
     );
+  }
+
+//ตัวอย่างการอัพโหลดรูปไป  เซิฟเวอร์
+  Future<void> uplodeImageToServer() async {
+    try {
+      String url = 'https://www.androidthai.in.th/rice/saveFileApo.php';
+
+      Map<String, dynamic> map = Map();
+
+      Random random = Random();
+      int i = random.nextInt(100000);
+
+      //การสั่งให้อัพโหลดรูปภาพขึ้นเซิร์ฟ
+
+      map['file'] = UploadFileInfo(file, 'user$i.jpg');
+      FormData formData = FormData.from(map);
+
+      //var response = await Dio().post(url, data: ชื่อที่มาจากเซิฟอาหาร);
+      var response = await Dio().post(url, data: formData);
+      print('response = ${response.toString()}');
+
+     urlPath = 'https://www.androidthai.in.th/rice/Apo/user$i.jpg';
+     insertDataToMySQL();
+
+    } catch (e) {
+      print('error ==> ${e.toString()}');
+    }
+  }
+
+  Future<void> insertDataToMySQL()async{
+
+try {
+  String url = 'https://www.androidthai.in.th/rice/addUserApo.php?isAdd=true&Name=$name&User=$user&Password=$password&Avatar=$urlPath';
+  var response = await Dio().get(url);
+
+  if (response.toString()== 'true') {
+    Navigator.of(context).pop();
+    
+  } else {
+    normalDialog(context,'Cannot Register', 'Please Try Agains กรุณาอีกครั้ง');
+  }
+
+} catch (e) {
+}
+
   }
 
   Widget registerButton3() {
